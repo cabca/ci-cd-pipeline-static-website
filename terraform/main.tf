@@ -9,7 +9,7 @@ data "aws_security_group" "existing_sg" {
 resource "aws_instance" "web" {
   ami           = "ami-0427090fd1714168b"
   instance_type = "t2.micro"
-  security_groups = [data.aws_security_group.existing_sg]
+  security_groups = [data.aws_security_group.existing_sg.id]
 
   tags = {
     Name = "MyWebServer"
