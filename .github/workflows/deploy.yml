@@ -70,16 +70,12 @@ jobs:
         run: |
           echo "instance_ip=$(terraform -chdir=terraform output -raw instance_ip)" >> $GITHUB_ENV
 
-      - name: Setup SSH
+      - name: Configure AWS instance with Ansible
+        env:
+          INSTANCE_IP: ${{ env.instance_ip }}
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
         run: |
           mkdir -p ~/.ssh
           echo "$SSH_PRIVATE_KEY" | tr -d '\r' > ~/.ssh/id_rsa
           chmod 400 ~/.ssh/id_rsa
-          ssh-keyscan -H $INSTANCE_IP >> ~/.ssh/known_hosts
-    
-      - name: Run Ansible Playbook
-        run: |
           ansible-playbook -i "$INSTANCE_IP," --private-key ~/.ssh/id_rsa ansible/playbook.yml
-        env:
-          INSTANCE_IP: ${{ steps.terraform.outputs.instance_ip }}
-          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
