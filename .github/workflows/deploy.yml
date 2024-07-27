@@ -78,4 +78,4 @@ jobs:
           mkdir -p ~/.ssh
           echo "$SSH_PRIVATE_KEY" | tr -d '\r' > ~/.ssh/id_rsa
           chmod 400 ~/.ssh/id_rsa
-          ansible-playbook -i "$INSTANCE_IP," --private-key ~/.ssh/id_rsa ansible/playbook.yml
+          ansible-playbook -i "$INSTANCE_IP," --private-key ~/.ssh/id_rsa -e "ansible_ssh_extra_args='-o StrictHostKeyChecking=no'" ansible/playbook.yml
