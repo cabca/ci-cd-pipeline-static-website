@@ -3,7 +3,7 @@ provider "aws" {
 }
 
 resource "aws_instance" "web" {
-  ami           = "ami-0c55b159cbfafe1f0" # Amazon Linux 2 AMI (Change as per your region)
+  ami           = "ami-0427090fd1714168b" # Amazon Linux 2 AMI (Change as per your region)
   instance_type = "t2.micro"
 
   tags = {
