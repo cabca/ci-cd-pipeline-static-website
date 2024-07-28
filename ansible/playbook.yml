@@ -50,10 +50,8 @@
         state: started
         enabled: yes
 
-    - name: Pull Docker image
-      docker_image:
-        name: my-static-website
-        source: local
+    - name: Load Docker image
+      command: docker load -i /home/ec2-user/my-static-website.tar.gz
 
     - name: Run Docker container
       docker_container:

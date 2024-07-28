@@ -85,9 +85,6 @@ jobs:
         run: |
           echo "Terraform output instance_ip: ${{ env.instance_ip }}"
 
-      #- name: Wait for the instance to initialize
-      #  run: sleep 180  # Increased wait time to 3 minutes
-
       - name: Retry SSH connection until instance is ready
         env:
           INSTANCE_IP: ${{ env.instance_ip }}
@@ -104,6 +101,10 @@ jobs:
             echo "Retrying SSH connection in 30 seconds..."
             sleep 30
           done
+
+      - name: Transfer Docker image
+        run: |
+          scp -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa my-static-website.tar.gz ec2-user@${{ env.instance_ip }}:/home/ec2-user/
 
       - name: Configure AWS instance with Ansible
         env:
