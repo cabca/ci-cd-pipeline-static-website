@@ -22,6 +22,9 @@ jobs:
           docker save my-static-website | gzip > my-static-website.tar.gz
         id: docker_build
 
+      - name: List files in the workspace after build
+        run: ls -la
+
       - name: Upload Docker image artifact
         uses: actions/upload-artifact@v4
         with:
@@ -40,6 +43,9 @@ jobs:
         with:
           name: docker-image
           path: .
+
+      - name: List files in the workspace after download
+        run: ls -la
 
       - name: Install dependencies
         run: |
@@ -69,7 +75,7 @@ jobs:
       - name: Get instance IP
         id: terraform
         run: |
-          echo "instance_ip=$(terraform -chdir=terraform output -raw instance_ip)" >> $GITHUB_ENV # Using environment files
+          echo "instance_ip=$(terraform -chdir=terraform output -raw instance_ip)" >> $GITHUB_ENV
 
       - name: Configure AWS instance with Ansible
         env:
@@ -79,4 +85,6 @@ jobs:
           mkdir -p ~/.ssh
           echo "$SSH_PRIVATE_KEY" | tr -d '\r' > ~/.ssh/id_rsa
           chmod 400 ~/.ssh/id_rsa
+          cat ~/.ssh/id_rsa
+          #ansible-playbook -i "$INSTANCE_IP" --private-key ~/.ssh/id_rsa -e "ansible_ssh_extra_args='-o StrictHostKeyChecking=no'" -e "ansible_ssh_user=ec2-user" ansible/playbook.yml
           ansible-playbook -i "$INSTANCE_IP" --private-key ~/.ssh/id_rsa -e "ansible_ssh_user=ec2-user" ansible/playbook.yml
