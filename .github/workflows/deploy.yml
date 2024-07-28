@@ -11,10 +11,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v1
+        uses: docker/setup-buildx-action@v2
 
       - name: Build Docker image
         run: |
@@ -23,7 +23,7 @@ jobs:
         id: docker_build
 
       - name: Upload Docker image artifact
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: docker-image
           path: my-static-website.tar.gz
@@ -33,10 +33,10 @@ jobs:
     needs: build
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Download Docker image artifact
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           name: docker-image
           path: .
@@ -69,7 +69,7 @@ jobs:
       - name: Get instance IP
         id: terraform
         run: |
-          echo "instance_ip=$(terraform -chdir=terraform output -raw instance_ip)" >> $GITHUB_ENV
+          echo "instance_ip=$(terraform -chdir=terraform output -raw instance_ip)" >> $GITHUB_ENV # Using environment files
 
       - name: Configure AWS instance with Ansible
         env:
@@ -79,6 +79,4 @@ jobs:
           mkdir -p ~/.ssh
           echo "$SSH_PRIVATE_KEY" | tr -d '\r' > ~/.ssh/id_rsa
           chmod 400 ~/.ssh/id_rsa
-          cat ~/.ssh/id_rsa
-          #ansible-playbook -i "$INSTANCE_IP" --private-key ~/.ssh/id_rsa -e "ansible_ssh_extra_args='-o StrictHostKeyChecking=no'" -e "ansible_ssh_user=ec2-user" ansible/playbook.yml
           ansible-playbook -i "$INSTANCE_IP" --private-key ~/.ssh/id_rsa -e "ansible_ssh_user=ec2-user" ansible/playbook.yml
