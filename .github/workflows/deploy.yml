@@ -25,6 +25,9 @@ jobs:
       - name: List files in the workspace after build
         run: ls -la
 
+      - name: Check if artifact file exists
+        run: test -f my-static-website.tar.gz && echo "Artifact exists" || echo "Artifact not found"
+
       - name: Upload Docker image artifact
         uses: actions/upload-artifact@v4
         with:
