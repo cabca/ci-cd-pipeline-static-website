@@ -85,8 +85,8 @@ jobs:
         run: |
           echo "Terraform output instance_ip: ${{ env.instance_ip }}"
 
-      - name: Wait for the instance to initialize
-        run: sleep 60
+      #- name: Wait for the instance to initialize
+      #  run: sleep 180  # Increased wait time to 3 minutes
 
       - name: Retry SSH connection until instance is ready
         env:
@@ -99,7 +99,8 @@ jobs:
           echo "[web]" > inventory
           echo "${{ env.instance_ip }}" >> inventory
           for i in {1..10}; do
-            ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ec2-user@${{ env.instance_ip }} echo 'SSH connection established' && break
+            echo "Attempt $i: Trying to SSH into $INSTANCE_IP"
+            ssh -v -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ec2-user@${{ env.instance_ip }} echo 'SSH connection established' && break
             echo "Retrying SSH connection in 30 seconds..."
             sleep 30
           done
