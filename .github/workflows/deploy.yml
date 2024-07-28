@@ -85,6 +85,9 @@ jobs:
         run: |
           echo "Terraform output instance_ip: ${{ env.instance_ip }}"
 
+      - name: Wait for the instance to initialize
+        run: sleep 60
+
       - name: Configure AWS instance with Ansible
         env:
           INSTANCE_IP: ${{ env.instance_ip }}
