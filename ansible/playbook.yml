@@ -1,4 +1,4 @@
-- name: "AWS - Install docker"
+- name: "AWS - Install Docker"
   hosts: all
   become: yes
   tasks:
@@ -15,32 +15,40 @@
         update_cache: yes
       vars:
         packages:
-        - python-pip
+        - python3
+        - python3-pip
         - yum-utils
         - device-mapper-persistent-data
         - lvm2
-        - amazon-linux-extras
 
-    - name: Add extras repository
-      shell: yum-config-manager --enable extras
+    - name: Check if amazon-linux-extras is available
+      stat:
+        path: /usr/bin/amazon-linux-extras
+      register: amazon_linux_extras_available
 
-    - name: Install docker-ce (centos) via amazon-linux-extras packages
-      shell: "amazon-linux-extras install docker=18.06.1 -y"
+    - name: Install Docker using amazon-linux-extras
+      command: amazon-linux-extras install -y docker
+      when: amazon_linux_extras_available.stat.exists
 
-    - name: Enable Docker CE service at startup
+    - name: Install Docker using yum for Amazon Linux
+      yum:
+        name: docker
+        state: present
+      when: not amazon_linux_extras_available.stat.exists
+
+    - name: Ensure Python pip packages are installed
+      pip:
+        name: "{{ pip_packages }}"
+      vars:
+        pip_packages:
+        - boto
+        - boto3
+
+    - name: Enable and start Docker service
       service:
         name: docker
         state: started
         enabled: yes
-
-    - name: Ensure Python pip packages are installed
-      pip:
-        name: "{{ packages }}"
-      vars:
-        packages:
-        - boto
-        - boto3
-        - docker-compose
 
     - name: Pull Docker image
       docker_image:
