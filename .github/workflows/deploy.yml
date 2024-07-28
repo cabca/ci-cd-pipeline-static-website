@@ -79,6 +79,11 @@ jobs:
         id: terraform
         run: |
           echo "instance_ip=$(terraform -chdir=terraform output -raw instance_ip)" >> $GITHUB_ENV
+          echo "Instance IP: ${{ env.instance_ip }}"
+
+      - name: Verify Terraform Output
+        run: |
+          echo "Terraform output instance_ip: ${{ env.instance_ip }}"
 
       - name: Configure AWS instance with Ansible
         env:
@@ -89,5 +94,7 @@ jobs:
           echo "$SSH_PRIVATE_KEY" | tr -d '\r' > ~/.ssh/id_rsa
           chmod 400 ~/.ssh/id_rsa
           cat ~/.ssh/id_rsa
-          #ansible-playbook -i "$INSTANCE_IP" --private-key ~/.ssh/id_rsa -e "ansible_ssh_extra_args='-o StrictHostKeyChecking=no'" -e "ansible_ssh_user=ec2-user" ansible/playbook.yml
-          ansible-playbook -i "$INSTANCE_IP" --private-key ~/.ssh/id_rsa -e "ansible_ssh_user=ec2-user" ansible/playbook.yml
+          echo "[web]" > inventory
+          echo "${{ env.instance_ip }}" >> inventory
+          cat inventory
+          ansible-playbook -i inventory --private-key ~/.ssh/id_rsa -e "ansible_ssh_user=ec2-user" ansible/playbook.yml
