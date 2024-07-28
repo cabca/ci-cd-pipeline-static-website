@@ -88,7 +88,7 @@ jobs:
       - name: Wait for the instance to initialize
         run: sleep 60
 
-      - name: Configure AWS instance with Ansible
+      - name: Retry SSH connection until instance is ready
         env:
           INSTANCE_IP: ${{ env.instance_ip }}
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
@@ -96,8 +96,17 @@ jobs:
           mkdir -p ~/.ssh
           echo "$SSH_PRIVATE_KEY" | tr -d '\r' > ~/.ssh/id_rsa
           chmod 400 ~/.ssh/id_rsa
-          cat ~/.ssh/id_rsa
           echo "[web]" > inventory
           echo "${{ env.instance_ip }}" >> inventory
-          cat inventory
-          ansible-playbook -i inventory --private-key ~/.ssh/id_rsa -e "ansible_ssh_user=ec2-user" ansible/playbook.yml
+          for i in {1..10}; do
+            ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ec2-user@${{ env.instance_ip }} echo 'SSH connection established' && break
+            echo "Retrying SSH connection in 30 seconds..."
+            sleep 30
+          done
+
+      - name: Configure AWS instance with Ansible
+        env:
+          INSTANCE_IP: ${{ env.instance_ip }}
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+        run: |
+          ansible-playbook -i inventory --private-key ~/.ssh/id_rsa -e "ansible_ssh_user=ec2-user ansible_ssh_extra_args='-o StrictHostKeyChecking=no'" ansible/playbook.yml
